@@ -16,7 +16,7 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
-BLUE = (0, 0, 255)  # Border color
+BLUE = (0, 0, 255)
 
 # Directions
 UP = (0, -1)
@@ -118,7 +118,8 @@ def main():
     game = SnakeGame()
 
     while not game.game_over:
-        path = bfs(game)  # Use BFS to find the path
+        # Use BFS to find the path
+        path = bfs(game)  
         if path:
             game.direction = path[0]  # Move in the first direction of the path
 
