@@ -77,9 +77,10 @@ class SnakeGame:
         elapsed_time = (pygame.time.get_ticks() - self.start_time) // 1000 
         timer_text = self.font.render(f"Time: {elapsed_time}s", True, WHITE)
 
+        # Draw the text for score and text on the screen
         screen.blit(score_text, (10, 10))
         screen.blit(timer_text, (10, 25))
-
+        
         # Update the display
         pygame.display.flip()
 
@@ -113,8 +114,11 @@ class Snake_Search:
 
 
 def main(algorithms, num_simulations=50):
-    pygame.init()  # Initialize Pygame to run simulations 
+    # Initialize Pygame to run simulations 
+    pygame.init()  
+    # Store the results of the simulations for each algorithm
     results = {alg.__name__: {"scores": [], "times": []} for alg in algorithms}
+    # Initialize the Pygame clock and screen to visualize the game and its tick rate
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
