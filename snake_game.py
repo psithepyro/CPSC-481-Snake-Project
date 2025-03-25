@@ -1,6 +1,8 @@
 import pygame
 import random
-from collections import deque
+import sys
+import heapq
+from collections import deque, defaultdict
 import time
 
 
@@ -85,45 +87,84 @@ class SnakeGame:
         pygame.display.flip()
 
 class Snake_Search:
+    
+    def heuristic(a, b): 
+        # Manhattan distance heuristic
+        return abs(a[0] - b[0]) + abs(a[1] - b[1])
+    
     def bfs(game):
         start = game.snake[0]
         target = game.food
-        # Initialize the queue with the start position and an empty path
+        # Initializes a double ended queue with the start position and an empty path
         queue = deque([(start, [])])
         visited = set()
+        max_nodes = 0
 
         while queue:
+            # Update the maximum number of nodes expanded
+            max_nodes = max(max_nodes, len(queue))
             # Pop the first element from the queue
             (x, y), path = queue.popleft()
             # If the current position is the target, return the path
             if (x, y) == target:
-                return path
+                return path, max_nodes
             # If the current position has been visited, skip it
             if (x, y) in visited:
                 continue
             # Mark the current position as visited
             visited.add((x, y))
 
-            # Add the adjacent positions to the queue
+            # Add the adjacent positions to the double ended queue
             for dx, dy in [UP, DOWN, LEFT, RIGHT]:
+                # Calculate the next position
                 nx, ny = x + dx, y + dy
                 # If the adjacent position is valid and not in the snake body, add it to the queue
                 if 0 <= nx < GRID_WIDTH and 0 <= ny < GRID_HEIGHT and (nx, ny) not in game.snake:
                     queue.append(((nx, ny), path + [(dx, dy)]))
-        return None
+        return None, max_nodes
     
-    #def dfs(game):
-    #def a_star(game):
-    #def greedy(game):
+    def a_star(game):
+        start = game.snake[0]
+        target = game.food
+        open_list = [(0, start, [])]  # Priority queue: (f_score, position, path)
+        visited = set()
+        max_nodes = 0
+
+        while open_list:
+            # Update the maximum number of nodes expanded
+            max_nodes = max(max_nodes, len(open_list))
+            # Pop the node with the lowest f_score
+            f, (x, y), path = heapq.heappop(open_list)
+            # If the current position is the target, return the path and max_nodes
+            if (x, y) == target:
+                return path, max_nodes
+            # If the current position has been visited, skip it
+            if (x, y) in visited:
+                continue
+            # Mark the current position as visited
+            visited.add((x, y))
+
+            # Add the adjacent positions to the priority queue
+            for dx, dy in [UP, DOWN, LEFT, RIGHT]:
+                nx, ny = x + dx, y + dy
+                # Only add valid positions that are not visited and not part of the snake body
+                if 0 <= nx < GRID_WIDTH and 0 <= ny < GRID_HEIGHT and (nx, ny) not in visited and (nx, ny) not in game.snake:
+                    new_path = path + [(dx, dy)]
+                    g = len(new_path)  # Cost to reach this node
+                    h = Snake_Search.heuristic((nx, ny), target)  # Heuristic cost to the target
+                    f = g + h  # Total cost
+                    heapq.heappush(open_list, (f, (nx, ny), new_path))
+
+        return None, max_nodes
     #def ucs(game):
     #def iter_deepening(game):
 
 
-def main(algorithms, num_simulations=50):
+def main(algorithms, num_simulations=5):
     # Initialize Pygame to run simulations 
     pygame.init()  
     # Store the results of the simulations for each algorithm
-    results = {alg.__name__: {"scores": [], "times": []} for alg in algorithms}
+    results = defaultdict(lambda: {"scores": [], "times": [], "max_nodes": []})
     # Initialize the Pygame clock and screen to visualize the game and its tick rate
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -135,12 +176,30 @@ def main(algorithms, num_simulations=50):
             # Initialize the game and start the timer
             game = SnakeGame()
             start_time = time.time()
+            max_nodes = 0
 
             #Initialize the search algorithm 
             while not game.game_over:
-                path = alg(game)
+                #track the maximum number of nodes expanded in the search
+                if alg.__name__ == "bfs":
+                    path, current_max_nodes = alg(game)
+                elif alg.__name__ == "dfs":
+                    path, current_max_nodes = alg(game)
+                elif alg.__name__ == "a_star":
+                    path, current_max_nodes = alg(game)
+                elif alg.__name__ == "ucs":
+                    path, current_max_nodes = alg(game)
+                elif alg.__name__ == "iter_deepening":
+                    path, current_max_nodes = alg(game)
+
+                # Update the maximum number of nodes expanded
+                max_nodes = max(max_nodes, current_max_nodes)
+
+                # If a path is found, move the snake in the specified direction
                 if path:
                     game.direction = path[0]
+
+                # Move the snake and update the game state
                 game.move()
                 clock.tick(200)
                 game.draw(screen)
@@ -149,14 +208,23 @@ def main(algorithms, num_simulations=50):
             end_time = time.time()
             results[alg.__name__]["scores"].append(game.score)
             results[alg.__name__]["times"].append(end_time - start_time)
+            results[alg.__name__]["max_nodes"].append(max_nodes)
 
             # Print the score and time for the current trial
-            print(f"{alg.__name__} snake trial {i+1}: Score = {game.score}, Time = {end_time - start_time:.2f}s")
+            print(f"{alg.__name__} snake trial {i+1}: Score = {game.score}, Time = {end_time - start_time:.2f}s, Max Nodes = {max_nodes}")
+            print("-" * 70)
 
+    print("\n \t\t---Simulation Results---")
+    print(f"{'Algorithm':<18}{'Avg Score':<14}{'Avg Time':<12} {'Avg Max Nodes':<12}")
+    print("-" * 60)
+
+    # Print the average score and time for each algorithm
     for alg, data in results.items():
         avg_score = sum(data["scores"]) / num_simulations
         avg_time = sum(data["times"]) / num_simulations
-        print(f"{alg}: Avg Score = {avg_score}, Avg Time = {avg_time:.2f}s")
+        avg_max_nodes = sum(data["max_nodes"]) / num_simulations
+        print(f"{alg:<20} {avg_score:<14.2f} {avg_time:<12.2f} {avg_max_nodes:<12.2f}")
+        print("-" * 60)
 
 if __name__ == "__main__":
-    main([Snake_Search.bfs])
+    main([Snake_Search.bfs, Snake_Search.a_star], num_simulations=10)
