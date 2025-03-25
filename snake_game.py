@@ -147,13 +147,15 @@ class Snake_Search:
             # Add the adjacent positions to the priority queue
             for dx, dy in [UP, DOWN, LEFT, RIGHT]:
                 nx, ny = x + dx, y + dy
-                # Only add valid positions that are not visited and not part of the snake body
-                if 0 <= nx < GRID_WIDTH and 0 <= ny < GRID_HEIGHT and (nx, ny) not in visited and (nx, ny) not in game.snake:
+                if 0 <= nx < GRID_WIDTH and 0 <= ny < GRID_HEIGHT and (nx, ny) not in game.snake and (nx, ny) not in visited:
                     new_path = path + [(dx, dy)]
-                    g = len(new_path)  # Cost to reach this node
-                    h = Snake_Search.heuristic((nx, ny), target)  # Heuristic cost to the target
-                    f = g + h  # Total cost
-                    heapq.heappush(open_list, (f, (nx, ny), new_path))
+                    # Cost to reach this node
+                    node_cost = len(new_path)  
+                    # Heuristic cost to the target
+                    heur = Snake_Search.heuristic((nx, ny), target) 
+                    # Total cost 
+                    totalnode_Cost = node_cost + heur  # Total cost
+                    heapq.heappush(open_list, (totalnode_Cost, (nx, ny), new_path))
 
         return None, max_nodes
     #def ucs(game):
@@ -182,8 +184,6 @@ def main(algorithms, num_simulations=5):
             while not game.game_over:
                 #track the maximum number of nodes expanded in the search
                 if alg.__name__ == "bfs":
-                    path, current_max_nodes = alg(game)
-                elif alg.__name__ == "dfs":
                     path, current_max_nodes = alg(game)
                 elif alg.__name__ == "a_star":
                     path, current_max_nodes = alg(game)
@@ -223,8 +223,8 @@ def main(algorithms, num_simulations=5):
         avg_score = sum(data["scores"]) / num_simulations
         avg_time = sum(data["times"]) / num_simulations
         avg_max_nodes = sum(data["max_nodes"]) / num_simulations
-        print(f"{alg:<20} {avg_score:<14.2f} {avg_time:<12.2f} {avg_max_nodes:<12.2f}")
+        print(f"{alg:<18} {avg_score:<14.2f} {avg_time:<12.2f} {avg_max_nodes:<12.2f}")
         print("-" * 60)
 
 if __name__ == "__main__":
-    main([Snake_Search.bfs, Snake_Search.a_star], num_simulations=10)
+    main([Snake_Search.bfs, Snake_Search.a_star], num_simulations=2)
