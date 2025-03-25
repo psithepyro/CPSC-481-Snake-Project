@@ -110,6 +110,12 @@ class Snake_Search:
                 if 0 <= nx < GRID_WIDTH and 0 <= ny < GRID_HEIGHT and (nx, ny) not in game.snake:
                     queue.append(((nx, ny), path + [(dx, dy)]))
         return None
+    
+    #def dfs(game):
+    #def a_star(game):
+    #def greedy(game):
+    #def ucs(game):
+    #def iter_deepening(game):
 
 
 def main(algorithms, num_simulations=50):
