@@ -158,7 +158,30 @@ class Snake_Search:
                     heapq.heappush(open_list, (totalnode_Cost, (nx, ny), new_path))
 
         return None, max_nodes
-    #def ucs(game):
+    
+    def ucs(game):
+        start = game.snake[0]
+        target = game.food
+        open_list = [(0, start, [])] #
+        visited = set()
+        max_nodes = 0
+
+        while open_list:
+            max_nodes = max(max_nodes, len(open_list))  # Track priority queue size
+            cost, (x, y), path = heapq.heappop(open_list)
+            if (x, y) == target:
+                return path, max_nodes
+            if (x, y) in visited:
+                continue
+            visited.add((x, y))
+
+            for dx, dy in [UP, DOWN, LEFT, RIGHT]:
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < GRID_WIDTH and 0 <= ny < GRID_HEIGHT and (nx, ny) not in game.snake:
+                    new_path = path + [(dx, dy)]
+                    new_cost = cost + 1
+                    heapq.heappush(open_list, (new_cost, (nx, ny), new_path))
+        return None, max_nodes
     #def iter_deepening(game):
 
 
@@ -227,4 +250,4 @@ def main(algorithms, num_simulations=5):
         print("-" * 60)
 
 if __name__ == "__main__":
-    main([Snake_Search.bfs, Snake_Search.a_star], num_simulations=2)
+    main([Snake_Search.bfs, Snake_Search.a_star, Snake_Search.ucs], num_simulations=2)
