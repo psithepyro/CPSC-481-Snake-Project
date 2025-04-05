@@ -194,37 +194,7 @@ class Snake_Search:
                     totalnode_Cost = node_cost
                     heapq.heappush(open_list, (totalnode_Cost, (nx, ny), new_path))
 
-        return None, max_nodes
-    def dfs(game):
-        start = game.snake[0]
-        target = game.food
-        # Initializes a double ended queue with the start position and an empty path
-        queue = deque([(start, [])])
-        visited = set()
-        max_nodes = 0
-
-        while queue:
-            # Update the maximum number of nodes expanded
-            max_nodes = max(max_nodes, len(queue))
-            # Pop the first element from the queue
-            (x, y), path = queue.popleft()
-            # If the current position is the target, return the path
-            if (x, y) == target:
-                return path, max_nodes
-            # If the current position has been visited, skip it
-            if (x, y) in visited:
-                continue
-            # Mark the current position as visited
-            visited.add((x, y))
-
-            # Add the adjacent positions to the double ended queue
-            for dx, dy in [UP, DOWN, LEFT, RIGHT]:
-                # Calculate the next position
-                nx, ny = x + dx, y + dy
-                # If the adjacent position is valid and not in the snake body, add it to the queue
-                if 0 <= nx < GRID_WIDTH and 0 <= ny < GRID_HEIGHT and (nx, ny) not in game.snake:
-                    queue.append(((nx, ny), path + [(dx, dy)]))
-        return None, max_nodes    
+        return None, max_nodes   
     #def iter_deepening(game):
 
 
