@@ -125,7 +125,7 @@ class Snake_Search:
                 if 0 <= nx < GRID_WIDTH and 0 <= ny < GRID_HEIGHT and (nx, ny) not in game.snake:
                     queue.append(((nx, ny), path + [(dx, dy)]))
         return None, max_nodes
-    
+
     def a_star(game):
         start = game.snake[0]
         target = game.food
@@ -194,11 +194,49 @@ class Snake_Search:
                     totalnode_Cost = node_cost
                     heapq.heappush(open_list, (totalnode_Cost, (nx, ny), new_path))
 
-        return None, max_nodes   
-    #def iter_deepening(game):
+        return None, max_nodes 
 
+    def iter_deepening(game):
+        start = game.snake[0]
+        target = game.food
+        max_depth = GRID_WIDTH * GRID_HEIGHT
+        max_nodes_overall = 0
+        
+        # Iteratively increase the depth limit
+        for depth_limit in range(1, max_depth + 1):
+            visited = set()
+            stack = deque([(start, [])])
+            max_nodes = 0
+            
+            while stack:
+                max_nodes = max(max_nodes, len(stack))
+                (x, y), path = stack.pop()
+                
+                # If the current position is target return the path
+                if (x, y) == target:
+                    return path, max(max_nodes, max_nodes_overall)
+                
+                # Will skip if depth limit reached 
+                if len(path) >= depth_limit:
+                    continue
+                    
+                # Mark the current position as visited
+                if (x, y) in visited:
+                    continue
+                visited.add((x, y))
+                
+                # Add the adjacent positions to the stack
+                for dx, dy in [UP, DOWN, LEFT, RIGHT]:
+                    nx, ny = x + dx, y + dy
+                    if 0 <= nx < GRID_WIDTH and 0 <= ny < GRID_HEIGHT and (nx, ny) not in game.snake:
+                        stack.append(((nx, ny), path + [(dx, dy)]))
+            
+            max_nodes_overall = max(max_nodes_overall, max_nodes)
+            
+            # If solution is not found in this iteration it will increase the depth limit by 1 and interate further
+        return None, max_nodes_overall
 
-def main(algorithms, num_simulations=5):
+def main(algorithms, num_simulations=1):
     # Initialize Pygame to run simulations 
     pygame.init()  
     # Store the results of the simulations for each algorithm
@@ -263,4 +301,4 @@ def main(algorithms, num_simulations=5):
         print("-" * 60)
 
 if __name__ == "__main__":
-    main([Snake_Search.bfs, Snake_Search.a_star, Snake_Search.ucs], num_simulations=3)
+    main([Snake_Search.bfs, Snake_Search.a_star, Snake_Search.ucs, Snake_Search.iter_deepening], num_simulations=1)
