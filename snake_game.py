@@ -125,7 +125,32 @@ class Snake_Search:
                 if 0 <= nx < GRID_WIDTH and 0 <= ny < GRID_HEIGHT and (nx, ny) not in game.snake:
                     queue.append(((nx, ny), path + [(dx, dy)]))
         return None, max_nodes
+    
+    def dfs(game):
+        start = game.snake[0]
+        target = game.food
+        stack = [(start, [])]
+        visited = set()
+        max_nodes = 0
 
+        while stack:
+            max_nodes = max(max_nodes, len(stack))
+            (x, y), path = stack.pop()
+            if (x, y) == target:
+                return path, max_nodes
+            if (x, y) in visited:
+                continue
+            visited.add((x, y))
+
+            for dx, dy in [UP, DOWN, LEFT, RIGHT]:
+                nx, ny = x + dx, y + dy
+                # Avoid walls and body
+                if (0 <= nx < GRID_WIDTH and 
+                    0 <= ny < GRID_HEIGHT and 
+                    (nx, ny) not in game.snake):
+                    stack.append(((nx, ny), path + [(dx, dy)]))
+        return None, max_nodes
+    
     def a_star(game):
         start = game.snake[0]
         target = game.food
@@ -165,6 +190,7 @@ class Snake_Search:
     def ucs(game):
         start = game.snake[0]
         target = game.food
+
         # Initializes a double ended queue with the start position and an empty path
         open_list = [(0, start, [])]  # Priority queue: (f_score, position, path)
         visited = set()
@@ -259,11 +285,11 @@ def main(algorithms, num_simulations=1):
                 #track the maximum number of nodes expanded in the search
                 if alg.__name__ == "bfs":
                     path, current_max_nodes = alg(game)
+                elif alg.__name__ == "dfs":
+                    path, current_max_nodes = alg(game)
                 elif alg.__name__ == "a_star":
                     path, current_max_nodes = alg(game)
                 elif alg.__name__ == "ucs":
-                    path, current_max_nodes = alg(game)
-                elif alg.__name__ == "iter_deepening":
                     path, current_max_nodes = alg(game)
 
                 # Update the maximum number of nodes expanded
@@ -271,7 +297,7 @@ def main(algorithms, num_simulations=1):
 
                 # If a path is found, move the snake in the specified direction
                 if path:
-                    game.direction = path[0]
+                    game.direction = path[0] # Exit the loop if no path is found
 
                 # Move the snake and update the game state
                 game.move()
@@ -300,5 +326,5 @@ def main(algorithms, num_simulations=1):
         print(f"{alg:<18} {avg_score:<14.2f} {avg_time:<12.2f} {avg_max_nodes:<12.2f}")
         print("-" * 60)
 
-if __name__ == "__main__":
+if __name__ == "__main__"
     main([Snake_Search.bfs, Snake_Search.a_star, Snake_Search.ucs, Snake_Search.iter_deepening], num_simulations=1)
