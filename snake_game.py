@@ -27,7 +27,7 @@ LEFT = (-1, 0)
 RIGHT = (1, 0)
 
 class SnakeGame:
-    def __init__(self):
+    def __init__(self, alg):
         # Initialize the game components
         self.snake = [(GRID_WIDTH // 2, GRID_HEIGHT // 2)]
         self.direction = RIGHT
@@ -36,6 +36,7 @@ class SnakeGame:
         self.game_over = False
         self.font = pygame.font.SysFont(None, 24)
         self.start_time = pygame.time.get_ticks()  # Store the start time
+        self.current_algorithm = alg
 
     def generate_food(self):
         # Generate a new food at a random position
@@ -78,11 +79,13 @@ class SnakeGame:
         # Calculate elapsed time in seconds
         elapsed_time = (pygame.time.get_ticks() - self.start_time) // 1000 
         timer_text = self.font.render(f"Time: {elapsed_time}s", True, WHITE)
+        
+        algorithm_text = self.font.render(f"Algorithm: {self.current_algorithm}", True, WHITE)
 
         # Draw the text for score and text on the screen
         screen.blit(score_text, (10, 10))
         screen.blit(timer_text, (10, 25))
-        
+        screen.blit(algorithm_text, (250, 20))
         # Update the display
         pygame.display.flip()
 
@@ -187,31 +190,79 @@ class Snake_Search:
     def ucs(game):
         start = game.snake[0]
         target = game.food
-        open_list = [(0, start, [])] #
+
+        # Initializes a double ended queue with the start position and an empty path
+        open_list = [(0, start, [])]  # Priority queue: (f_score, position, path)
         visited = set()
         max_nodes = 0
-
         while open_list:
-            # Track priority queue size
-            max_nodes = max(max_nodes, len(open_list))  
-            cost, (x, y), path = heapq.heappop(open_list)
+            # Update the maximum number of nodes expanded
+            max_nodes = max(max_nodes, len(open_list))
+            # Pop the node with the lowest f_score
+            f, (x, y), path = heapq.heappop(open_list)
+            # If the current position is the target, return the path and max_nodes
             if (x, y) == target:
                 return path, max_nodes
+            # If the current position has been visited, skip it
             if (x, y) in visited:
                 continue
+            # Mark the current position as visited
             visited.add((x, y))
 
+            # Add the adjacent positions to the priority queue
             for dx, dy in [UP, DOWN, LEFT, RIGHT]:
                 nx, ny = x + dx, y + dy
-                if 0 <= nx < GRID_WIDTH and 0 <= ny < GRID_HEIGHT and (nx, ny) not in game.snake:
+                if 0 <= nx < GRID_WIDTH and 0 <= ny < GRID_HEIGHT and (nx, ny) not in game.snake and (nx, ny) not in visited:
                     new_path = path + [(dx, dy)]
-                    new_cost = cost + 1
-                    heapq.heappush(open_list, (new_cost, (nx, ny), new_path))
-        return None, max_nodes
-    
+                    # Cost to reach this node
+                    node_cost = len(new_path)  
+                    # Total cost 
+                    totalnode_Cost = node_cost
+                    heapq.heappush(open_list, (totalnode_Cost, (nx, ny), new_path))
 
+        return None, max_nodes 
 
-def main(algorithms, num_simulations=5):
+    def iter_deepening(game):
+        start = game.snake[0]
+        target = game.food
+        max_depth = GRID_WIDTH * GRID_HEIGHT
+        max_nodes_overall = 0
+        
+        # Iteratively increase the depth limit
+        for depth_limit in range(1, max_depth + 1):
+            visited = set()
+            stack = deque([(start, [])])
+            max_nodes = 0
+            
+            while stack:
+                max_nodes = max(max_nodes, len(stack))
+                (x, y), path = stack.pop()
+                
+                # If the current position is target return the path
+                if (x, y) == target:
+                    return path, max(max_nodes, max_nodes_overall)
+                
+                # Will skip if depth limit reached 
+                if len(path) >= depth_limit:
+                    continue
+                    
+                # Mark the current position as visited
+                if (x, y) in visited:
+                    continue
+                visited.add((x, y))
+                
+                # Add the adjacent positions to the stack
+                for dx, dy in [UP, DOWN, LEFT, RIGHT]:
+                    nx, ny = x + dx, y + dy
+                    if 0 <= nx < GRID_WIDTH and 0 <= ny < GRID_HEIGHT and (nx, ny) not in game.snake:
+                        stack.append(((nx, ny), path + [(dx, dy)]))
+            
+            max_nodes_overall = max(max_nodes_overall, max_nodes)
+            
+            # If solution is not found in this iteration it will increase the depth limit by 1 and interate further
+        return None, max_nodes_overall
+
+def main(algorithms, num_simulations=1):
     # Initialize Pygame to run simulations 
     pygame.init()  
     # Store the results of the simulations for each algorithm
@@ -225,7 +276,7 @@ def main(algorithms, num_simulations=5):
         # Run the simulation num_simulations times
         for i in range(num_simulations):
             # Initialize the game and start the timer
-            game = SnakeGame()
+            game = SnakeGame(alg.__name__.upper())
             start_time = time.time()
             max_nodes = 0
 
@@ -275,5 +326,5 @@ def main(algorithms, num_simulations=5):
         print(f"{alg:<18} {avg_score:<14.2f} {avg_time:<12.2f} {avg_max_nodes:<12.2f}")
         print("-" * 60)
 
-if __name__ == "__main__":
-    main([Snake_Search.bfs,Snake_Search.a_star, Snake_Search.ucs], num_simulations=10)
+if __name__ == "__main__"
+    main([Snake_Search.bfs, Snake_Search.a_star, Snake_Search.ucs, Snake_Search.iter_deepening], num_simulations=1)
