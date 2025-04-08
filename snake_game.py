@@ -302,3 +302,4 @@ def main(algorithms, num_simulations=1):
 
 if __name__ == "__main__":
     main([Snake_Search.bfs, Snake_Search.a_star, Snake_Search.ucs, Snake_Search.iter_deepening], num_simulations=1)
+
