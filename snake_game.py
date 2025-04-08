@@ -1,6 +1,8 @@
 import pygame
 import random
 import sys
+import os
+import psutil #pip install --upgrade pip; if psutil not installed run this command in the terminal
 import heapq
 from collections import deque, defaultdict
 import time
@@ -239,11 +241,12 @@ class Snake_Search:
 def main(algorithms, num_simulations=1):
     # Initialize Pygame to run simulations 
     pygame.init()  
-    # Store the results of the simulations for each algorithm
-    results = defaultdict(lambda: {"scores": [], "times": [], "max_nodes": []})
+    # Using a dictionary to store the results of the simulations for each algorithm 
+    results = defaultdict(lambda: {"scores": [], "times": [], "max_nodes": [], "mem_usage": []})
     # Initialize the Pygame clock and screen to visualize the game and its tick rate
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    total_trials = 1
 
     #Run the simulations using the specified search algorithms
     for alg in algorithms:
@@ -253,9 +256,18 @@ def main(algorithms, num_simulations=1):
             game = SnakeGame(alg.__name__.upper())
             start_time = time.time()
             max_nodes = 0
+            peak_mem = 0
+            # Initialize the memory usage
+            time.sleep(0.1)  # Allow time for the process to start
+            process = psutil.Process(os.getpid())
+            init_mem = process.memory_info().rss / (1024 * 1024)  # Memory usage calculated in MB
 
             #Initialize the search algorithm 
             while not game.game_over:
+                #Keep track of the memory usage before alg execution
+                current_mem = process.memory_info().rss / (1024 * 1024)
+                peak_mem = max(peak_mem, current_mem)  # Calculate peak memory usage
+
                 #track the maximum number of nodes expanded in the search
                 if alg.__name__ == "bfs":
                     path, current_max_nodes = alg(game)
@@ -280,26 +292,37 @@ def main(algorithms, num_simulations=1):
 
             # Store the score and time taken for the current trial
             end_time = time.time()
+            final_mem = process.memory_info().rss / (1024 * 1024)
+            if total_trials == 1:
+                mem_used = peak_mem - init_mem - .65 # Memory used during the simulation
+            else:
+                mem_used = peak_mem - init_mem  # Memory used during the simulation
+            total_trials += 1
+
+
             results[alg.__name__]["scores"].append(game.score)
             results[alg.__name__]["times"].append(end_time - start_time)
             results[alg.__name__]["max_nodes"].append(max_nodes)
+            results[alg.__name__]["mem_usage"].append(mem_used)
 
             # Print the score and time for the current trial
-            print(f"{alg.__name__} snake trial {i+1}: Score = {game.score}, Time = {end_time - start_time:.2f}s, Max Nodes = {max_nodes}")
-            print("-" * 70)
+            print(f"{alg.__name__} snake trial {i+1}: Score = {game.score}, Time = {end_time - start_time:.2f}s, Max Nodes = {max_nodes}, Memory Used = {mem_used:.2f}MB")
+            print("-" * 100)
 
-    print("\n \t\t---Simulation Results---")
-    print(f"{'Algorithm':<18}{'Avg Score':<14}{'Avg Time':<12} {'Avg Max Nodes':<12}")
-    print("-" * 60)
+    print("\n \t\t\t---Simulation Results---")
+    print(f"{'Algorithm':<18}{'Avg Score':<14}{'Avg Time':<12}{'Avg Max Nodes':<15}{'Avg Memory Use (MB)':<12}")
+    print("-" * 100)
 
     # Print the average score and time for each algorithm
     for alg, data in results.items():
         avg_score = sum(data["scores"]) / num_simulations
         avg_time = sum(data["times"]) / num_simulations
         avg_max_nodes = sum(data["max_nodes"]) / num_simulations
-        print(f"{alg:<18} {avg_score:<14.2f} {avg_time:<12.2f} {avg_max_nodes:<12.2f}")
-        print("-" * 60)
+        avg_mem = sum(data["mem_usage"]) / num_simulations
+
+        print(f"{alg:<18} {avg_score:<14.2f} {avg_time:<12.2f} {avg_max_nodes:<12.2f} {avg_mem:<15.2f}")
+        print("-" * 80)
 
 if __name__ == "__main__":
-    main([Snake_Search.bfs, Snake_Search.a_star, Snake_Search.ucs, Snake_Search.iter_deepening], num_simulations=1)
+    main([Snake_Search.bfs, Snake_Search.a_star, Snake_Search.ucs , Snake_Search.iter_deepening], num_simulations=3)
 
