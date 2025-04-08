@@ -123,6 +123,31 @@ class Snake_Search:
                     queue.append(((nx, ny), path + [(dx, dy)]))
         return None, max_nodes
     
+    def dfs(game):
+        start = game.snake[0]
+        target = game.food
+        stack = [(start, [])]
+        visited = set()
+        max_nodes = 0
+
+        while stack:
+            max_nodes = max(max_nodes, len(stack))
+            (x, y), path = stack.pop()
+            if (x, y) == target:
+                return path, max_nodes
+            if (x, y) in visited:
+                continue
+            visited.add((x, y))
+
+            for dx, dy in [UP, DOWN, LEFT, RIGHT]:
+                nx, ny = x + dx, y + dy
+                # Avoid walls and body
+                if (0 <= nx < GRID_WIDTH and 
+                    0 <= ny < GRID_HEIGHT and 
+                    (nx, ny) not in game.snake):
+                    stack.append(((nx, ny), path + [(dx, dy)]))
+        return None, max_nodes
+    
     def a_star(game):
         start = game.snake[0]
         target = game.food
@@ -167,7 +192,8 @@ class Snake_Search:
         max_nodes = 0
 
         while open_list:
-            max_nodes = max(max_nodes, len(open_list))  # Track priority queue size
+            # Track priority queue size
+            max_nodes = max(max_nodes, len(open_list))  
             cost, (x, y), path = heapq.heappop(open_list)
             if (x, y) == target:
                 return path, max_nodes
@@ -182,7 +208,7 @@ class Snake_Search:
                     new_cost = cost + 1
                     heapq.heappush(open_list, (new_cost, (nx, ny), new_path))
         return None, max_nodes
-    #def iter_deepening(game):
+    
 
 
 def main(algorithms, num_simulations=5):
@@ -208,11 +234,11 @@ def main(algorithms, num_simulations=5):
                 #track the maximum number of nodes expanded in the search
                 if alg.__name__ == "bfs":
                     path, current_max_nodes = alg(game)
+                elif alg.__name__ == "dfs":
+                    path, current_max_nodes = alg(game)
                 elif alg.__name__ == "a_star":
                     path, current_max_nodes = alg(game)
                 elif alg.__name__ == "ucs":
-                    path, current_max_nodes = alg(game)
-                elif alg.__name__ == "iter_deepening":
                     path, current_max_nodes = alg(game)
 
                 # Update the maximum number of nodes expanded
@@ -220,7 +246,7 @@ def main(algorithms, num_simulations=5):
 
                 # If a path is found, move the snake in the specified direction
                 if path:
-                    game.direction = path[0]
+                    game.direction = path[0] # Exit the loop if no path is found
 
                 # Move the snake and update the game state
                 game.move()
@@ -250,4 +276,4 @@ def main(algorithms, num_simulations=5):
         print("-" * 60)
 
 if __name__ == "__main__":
-    main([Snake_Search.bfs, Snake_Search.a_star, Snake_Search.ucs], num_simulations=2)
+    main([Snake_Search.bfs,Snake_Search.a_star, Snake_Search.ucs], num_simulations=10)
