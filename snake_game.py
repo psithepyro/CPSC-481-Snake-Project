@@ -291,6 +291,8 @@ def main(algorithms, num_simulations=1):
                     path, current_max_nodes = alg(game)
                 elif alg.__name__ == "ucs":
                     path, current_max_nodes = alg(game)
+                elif alg.__name__ == "iter_deepening":
+                    path, current_max_nodes = alg(game)
 
                 # Update the maximum number of nodes expanded
                 max_nodes = max(max_nodes, current_max_nodes)
@@ -326,5 +328,5 @@ def main(algorithms, num_simulations=1):
         print(f"{alg:<18} {avg_score:<14.2f} {avg_time:<12.2f} {avg_max_nodes:<12.2f}")
         print("-" * 60)
 
-if __name__ == "__main__"
+if __name__ == "__main__":
     main([Snake_Search.bfs, Snake_Search.a_star, Snake_Search.ucs, Snake_Search.iter_deepening], num_simulations=1)
