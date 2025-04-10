@@ -1,7 +1,7 @@
 import pygame
 import random
 import os
-import psutil #pip install --upgrade pip; if psutil not installed run this command in the terminal
+import psutil #pip install psutil; if psutil not installed run this command in the terminal
 import heapq
 from collections import deque, defaultdict
 import time
@@ -176,7 +176,7 @@ class Snake_Search:
             # Update the maximum number of nodes expanded
             max_nodes = max(max_nodes, len(open_list))
             # Pop the node with the lowest f_score
-            f, (x, y), path = heapq.heappop(open_list)
+            f,(x, y), path = heapq.heappop(open_list)
             # If the current position is the target, return the path and max_nodes
             if (x, y) == target:
                 return path, max_nodes
@@ -208,47 +208,46 @@ class Snake_Search:
         # Iteratively increase the depth limit
         for depth_limit in range(1, max_depth + 1):
             visited = set()
-            stack = deque([(start, [])])
+            stack = deque([(start, [], 0)]) # Stack for IDS: (position, path, depth)
             max_nodes = 0
             
             while stack:
                 max_nodes = max(max_nodes, len(stack))
-                (x, y), path = stack.pop()
+                (x, y), path, depth = stack.pop()
                 
-                # If the current position is target return the path
+                # If the current position is the food then return the path 
+                # Along with the maximum number of nodes expanded 
                 if (x, y) == target:
                     return path, max(max_nodes, max_nodes_overall)
                 
                 # Will skip if depth limit reached 
-                if len(path) >= depth_limit:
+                if depth >= depth_limit:
                     continue
-                    
-                # Mark the current position as visited
-                if (x, y) in visited:
-                    continue
+
+                # If the current position has been visited, skip it
                 visited.add((x, y))
                 
                 # Add the adjacent positions to the stack
                 for dx, dy in [UP, DOWN, LEFT, RIGHT]:
                     nx, ny = x + dx, y + dy
-                    if 0 <= nx < GRID_WIDTH and 0 <= ny < GRID_HEIGHT and (nx, ny) not in game.snake:
-                        stack.append(((nx, ny), path + [(dx, dy)]))
+                    # If the adjacent position have not been visited and not in the snake body, add it to the stack
+                    if 0 <= nx < GRID_WIDTH and 0 <= ny < GRID_HEIGHT and (nx, ny) not in game.snake and (nx, ny) not in visited:
+                        stack.append(((nx, ny), path + [(dx, dy), depth + 1]))
             
             max_nodes_overall = max(max_nodes_overall, max_nodes)
             
-            # If solution is not found in this iteration it will increase the depth limit by 1 and interate further
+            # If solution is not found in this iteration it will increase the depth limit by 1 
         return None, max_nodes_overall
     
 
 def plot_results(results):
     algorithms = list(results.keys())
-    
     # Prepare data for plotting
     metrics = {
-        'Score': [np.mean(results[alg]['scores']) for alg in algorithms],
-        'Time': [np.mean(results[alg]['times']) for alg in algorithms],
-        'Max Nodes': [np.mean(results[alg]['max_nodes']) for alg in algorithms],
-        'Memory (MB)': [np.mean(results[alg]['memory_usage']) for alg in algorithms]
+        'Score': [np.mean(results[alg]["scores"]) for alg in algorithms],
+        'Time': [np.mean(results[alg]["times"]) for alg in algorithms],
+        'Max Nodes': [np.mean(results[alg]["max_nodes"]) for alg in algorithms],
+        'Memory (MB)': [np.mean(results[alg]["mem_usage"]) for alg in algorithms]
     }
     
     # Create subplots
@@ -333,7 +332,7 @@ def main(algorithms, num_simulations=1):
             end_time = time.time()
             final_mem = process.memory_info().rss / (1024 * 1024)
             if total_trials == 1:
-                mem_used = peak_mem - init_mem - .65 # Memory used during the simulation
+                mem_used = peak_mem - init_mem - 0.65 # Memory used during the simulation
             else:
                 mem_used = peak_mem - init_mem  # Memory used during the simulation
             total_trials += 1
@@ -362,7 +361,9 @@ def main(algorithms, num_simulations=1):
         print(f"{alg:<18} {avg_score:<14.2f} {avg_time:<12.2f} {avg_max_nodes:<12.2f} {avg_mem:<15.2f}")
         print("-" * 80)
 
+    return results
+
 if __name__ == "__main__":
-    #results = main([Snake_Search.bfs, Snake_Search.a_star, Snake_Search.ucs , Snake_Search.iter_deepening], num_simulations=3)
-    #plot_results(results)
-    main([Snake_Search.iter_deepening], num_simulations=3)
+    results = main([Snake_Search.bfs, Snake_Search.a_star, Snake_Search.ucs], num_simulations=1)
+    plot_results(results)
+    #main([Snake_Search.iter_deepening], num_simulations=3)
