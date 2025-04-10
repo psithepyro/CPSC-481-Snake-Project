@@ -232,7 +232,7 @@ class Snake_Search:
                     nx, ny = x + dx, y + dy
                     # If the adjacent position have not been visited and not in the snake body, add it to the stack
                     if 0 <= nx < GRID_WIDTH and 0 <= ny < GRID_HEIGHT and (nx, ny) not in game.snake and (nx, ny) not in visited:
-                        stack.append(((nx, ny), path + [(dx, dy), depth + 1]))
+                        stack.append(((nx, ny), path + [(dx, dy)], depth + 1))
             
             max_nodes_overall = max(max_nodes_overall, max_nodes)
             
@@ -286,7 +286,7 @@ def main(algorithms, num_simulations=1):
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     total_trials = 1
 
-    #Run the simulations using the specified search algorithms
+    # Run the simulations using the specified search algorithms
     for alg in algorithms:
         # Run the simulation num_simulations times
         for i in range(num_simulations):
@@ -300,21 +300,22 @@ def main(algorithms, num_simulations=1):
             process = psutil.Process(os.getpid())
             init_mem = process.memory_info().rss / (1024 * 1024)  # Memory usage calculated in MB
 
-            #Initialize the search algorithm 
+            # Initialize the search algorithm 
             while not game.game_over:
-                #Keep track of the memory usage before alg execution
+                # Keep track of the memory usage before alg execution
                 current_mem = process.memory_info().rss / (1024 * 1024)
                 peak_mem = max(peak_mem, current_mem)  # Calculate peak memory usage
 
-                #track the maximum number of nodes expanded in the search
-                if alg.__name__ == "bfs":
-                    path, current_max_nodes = alg(game)
-                elif alg.__name__ == "a_star":
-                    path, current_max_nodes = alg(game)
-                elif alg.__name__ == "ucs":
-                    path, current_max_nodes = alg(game)
-                elif alg.__name__ == "iter_deepening":
-                    path, current_max_nodes = alg(game)
+                # Track the maximum number of nodes expanded in the search
+                path, current_max_nodes = alg(game)
+
+                # Check if the algorithm is taking too long (timeout after 60 seconds)
+                elapsed_time = time.time() - start_time
+                if elapsed_time > 60:
+                    print(f"{alg.__name__} snake trial {i+1}: Timeout after 60 seconds.")
+                    print("-" * 60)
+                    game.game_over = True
+                    break
 
                 # Update the maximum number of nodes expanded
                 max_nodes = max(max_nodes, current_max_nodes)
@@ -332,11 +333,21 @@ def main(algorithms, num_simulations=1):
             end_time = time.time()
             final_mem = process.memory_info().rss / (1024 * 1024)
             if total_trials == 1:
-                mem_used = peak_mem - init_mem - 0.65 # Memory used during the simulation
+                mem_used = peak_mem - init_mem - 0.55  # Memory used during the simulation
             else:
                 mem_used = peak_mem - init_mem  # Memory used during the simulation
             total_trials += 1
 
+            # If the simulation timed out, record a score of 0 and skip further calculations
+            if elapsed_time > 60:
+                results[alg.__name__]["scores"].append(game.score)
+                results[alg.__name__]["times"].append(60)
+                results[alg.__name__]["max_nodes"].append(max_nodes)
+                results[alg.__name__]["mem_usage"].append(mem_used)
+
+                print(f"{alg.__name__} snake trial {i+1}: Score = {game.score}, Time = {60.00:.2f}s, Max Nodes = {max_nodes}, Memory Used = {mem_used:.2f}MB")
+                print("-" * 100)
+                continue
 
             results[alg.__name__]["scores"].append(game.score)
             results[alg.__name__]["times"].append(end_time - start_time)
@@ -364,6 +375,5 @@ def main(algorithms, num_simulations=1):
     return results
 
 if __name__ == "__main__":
-    results = main([Snake_Search.bfs, Snake_Search.a_star, Snake_Search.ucs], num_simulations=1)
+    results = main([Snake_Search.bfs, Snake_Search.a_star, Snake_Search.ucs, Snake_Search.iter_deepening], num_simulations=200)
     plot_results(results)
-    #main([Snake_Search.iter_deepening], num_simulations=3)
