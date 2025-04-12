@@ -1,9 +1,5 @@
 import pygame
 import random
-from collections import deque, defaultdict
-
-
-
 
 # Constants
 WIDTH, HEIGHT = 600, 400

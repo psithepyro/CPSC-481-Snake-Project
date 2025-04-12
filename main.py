@@ -2,9 +2,9 @@ import pygame
 import os
 import psutil #pip install psutil; if psutil not installed run this command in the terminal
 from collections import defaultdict
-import snake_search # Import the search algorithms from snake_search.py
-import snake_game # Import the SnakeGame class from snake_game.py
-import plot_eval # Import the plot_results function from plot_eval.py
+import snake_search as snk_s # Import the search algorithms from snake_search.py
+import snake_game as snk_g# Import the SnakeGame class from snake_game.py
+import plot_eval as plt # Import the plot_results function from plot_eval.py
 from snake_game import UP, DOWN, LEFT, RIGHT, GRID_WIDTH, GRID_HEIGHT, WIDTH, HEIGHT
 import time
 
@@ -24,7 +24,7 @@ def main(algorithms, num_simulations=1):
         # Run the simulation num_simulations times
         for i in range(num_simulations):
             # Initialize the game and start the timer
-            game = snake_game.SnakeGame(alg.__name__.upper())
+            game = snk_g.SnakeGame(alg.__name__.upper())
             start_time = time.time()
             max_nodes = 0
             peak_mem = 0
@@ -40,7 +40,7 @@ def main(algorithms, num_simulations=1):
                 if elapsed_time > 3 and game.score <= 10:
                     print(f"{alg.__name__} snake trial {i+1}: Restarting simulation due to timeout.")
                     print("-" * 75)
-                    game = snake_game.SnakeGame(alg.__name__.upper())
+                    game = snk_g.SnakeGame(alg.__name__.upper())
                     start_time = time.time()
                     max_nodes = 0
                     peak_mem = 0
@@ -118,5 +118,5 @@ def main(algorithms, num_simulations=1):
     return results
 
 if __name__ == "__main__":
-    results = main([snake_search.Snake_AI.bfs, snake_search.Snake_AI.a_star, snake_search.Snake_AI.ucs,snake_search.Snake_AI.iter_deepening], num_simulations=2)
-    plot_eval.plot_results(results)
+    results = main([snk_s.Snake_AI.bfs, snk_s.Snake_AI.a_star, snk_s.Snake_AI.ucs,snk_s.Snake_AI.iter_deepening], num_simulations=2)
+    plt.plot_results(results)
