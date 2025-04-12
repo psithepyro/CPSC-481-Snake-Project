@@ -1,11 +1,7 @@
 import pygame
 import random
-import os
-import psutil #pip install psutil; if psutil not installed run this command in the terminal
-import heapq
 from collections import deque, defaultdict
-import snake_search # Import the search algorithms from snake_search.py
-import time
+
 
 
 
