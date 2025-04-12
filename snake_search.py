@@ -8,27 +8,6 @@ class Snake_AI:
         # Manhattan distance (simpler and faster)
         return abs(a[0] - b[0]) + abs(a[1] - b[1])
     
-    def flood_fill(start, game):
-        queue = deque([start])
-        visited = set()
-        free_space = 0
-
-        while queue:
-            x, y = queue.popleft()
-            if (x, y) in visited or (x, y) in game.snake:
-                continue
-
-            visited.add((x, y))
-            free_space += 1
-
-            for dx, dy in [UP, DOWN, LEFT, RIGHT]:
-                nx, ny = x + dx, y + dy
-                if 0 <= nx < GRID_WIDTH and 0 <= ny < GRID_HEIGHT and (nx, ny) not in visited:
-                    queue.append((nx, ny))
-
-        return free_space
-            
-    
     def bfs(game):
         start = game.snake[0]
         target = game.food
