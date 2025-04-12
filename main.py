@@ -83,21 +83,20 @@ def main(algorithms, num_simulations=1):
             # Store the score and time taken for the current trial
             end_time = time.time()
             final_mem = process.memory_info().rss / (1024 * 1024)
-            if total_trials == 1:
-                mem_used = peak_mem - init_mem - 0.5  # Memory used during the simulation
+            """  if total_trials == 1:
+                final_mem = final_mem - init_mem# Memory used during the simulation
             else:
-                mem_used = peak_mem - init_mem  # Memory used during the simulation
+                final_mem = final_mem  # Memory used during the simulation """
             total_trials += 1
 
             results[alg.__name__]["scores"].append(game.score)
             results[alg.__name__]["times"].append(end_time - start_time)
             results[alg.__name__]["max_nodes"].append(max_nodes)
-            if mem_used <= 0:
-                mem_used = 0.01  # Avoid zero memory usage
+            if final_mem <= 0: final_mem += 0.01  # Avoid zero memory usage
 
             # Print the score and time for the current trial
-            results[alg.__name__]["mem_usage"].append(mem_used)
-            print(f"{alg.__name__} snake trial {i+1}: Score = {game.score}, Time = {end_time - start_time:.2f}s, Max Nodes = {max_nodes}, Memory Used = {mem_used:.2f}MB")
+            results[alg.__name__]["mem_usage"].append(final_mem)
+            print(f"{alg.__name__} snake trial {i+1}: Score = {game.score}, Time = {end_time - start_time:.2f}s, Max Nodes = {max_nodes}, Memory Used = {final_mem:.2f}MB")
             print("-" * 100)
 
             
