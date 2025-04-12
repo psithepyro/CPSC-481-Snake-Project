@@ -1,5 +1,5 @@
 import heapq
-from collections import deque, defaultdict
+from collections import deque
 from snake_game import UP, DOWN, LEFT, RIGHT, GRID_WIDTH, GRID_HEIGHT
 
 class Snake_AI:
@@ -11,7 +11,7 @@ class Snake_AI:
     def bfs(game):
         start = game.snake[0]
         target = game.food
-        # Initializes a double-ended queue with the start position and an empty path
+        # Initializes a double-ended queue with the start position and an empty path (FIFO)
         queue = deque([(start, [])])
         visited = set()
         max_nodes = 0
@@ -42,7 +42,7 @@ class Snake_AI:
     def a_star(game):
         start = game.snake[0]
         target = game.food
-        open_list = [(0, start)]  # Priority queue: (f_score, position)
+        open_list = [(0, start)]  # Priority queue: (f_score, position) 
         g_score = {start: 0}  # Cost to reach each node
         came_from = {}  # To reconstruct the path
         visited = set()

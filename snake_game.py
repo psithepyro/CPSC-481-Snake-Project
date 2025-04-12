@@ -17,8 +17,8 @@ BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 
 # Directions
-UP = (0, -1)
-DOWN = (0, 1)
+UP = (0, 1)
+DOWN = (0, -1)
 LEFT = (-1, 0)
 RIGHT = (1, 0)
 

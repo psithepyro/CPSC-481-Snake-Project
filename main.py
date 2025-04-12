@@ -103,7 +103,7 @@ def main(algorithms, num_simulations=1):
             
     print("\n \t\t\t---Simulation Results---")
     print(f"{'Algorithm':<18}{'Avg Score':<15}{'Avg Time':<13}{'Avg Max Nodes':<17}{'Avg Memory Use (MB)':<14}")
-    print("-" * 100)
+    print("-" * 90)
 
     # Print the average score and time for each algorithm
     for alg, data in results.items():
@@ -118,5 +118,5 @@ def main(algorithms, num_simulations=1):
     return results
 
 if __name__ == "__main__":
-    results = main([snk_s.Snake_AI.bfs, snk_s.Snake_AI.a_star, snk_s.Snake_AI.ucs,snk_s.Snake_AI.iter_deepening], num_simulations=2)
+    results = main([snk_s.Snake_AI.bfs, snk_s.Snake_AI.a_star, snk_s.Snake_AI.ucs,snk_s.Snake_AI.iter_deepening], num_simulations=3)
     plt.plot_results(results)
