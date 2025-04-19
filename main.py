@@ -27,11 +27,9 @@ def main(algorithms, num_simulations=1):
             game = snk_g.SnakeGame(alg.__name__.upper())
             start_time = time.time()
             max_nodes = 0
-            peak_mem = 0
             # Initialize the memory usage
             time.sleep(0.1)  # Allow time for the process to start
             process = psutil.Process(os.getpid())
-            init_mem = process.memory_info().rss / (1024 * 1024)  # Memory usage calculated in MB
 
             # Initialize the search algorithm 
             while not game.game_over:
@@ -43,15 +41,9 @@ def main(algorithms, num_simulations=1):
                     game = snk_g.SnakeGame(alg.__name__.upper())
                     start_time = time.time()
                     max_nodes = 0
-                    peak_mem = 0
                     # Initialize the memory usage
                     time.sleep(0.1)  # Allow time for the process to start
                     process = psutil.Process(os.getpid())
-                    init_mem = process.memory_info().rss / (1024 * 1024)  
-
-                # Keep track of the memory usage before alg execution
-                current_mem = process.memory_info().rss / (1024 * 1024)
-                peak_mem = max(peak_mem, current_mem)  # Calculate peak memory usage
 
                 # Track the maximum number of nodes expanded in the search
                 path, current_max_nodes = alg(game)
@@ -81,12 +73,8 @@ def main(algorithms, num_simulations=1):
                 continue
 
             # Store the score and time taken for the current trial
+            final_mem = process.memory_info().rss / (1024 * 1024)  # Memory usage calculated in MB
             end_time = time.time()
-            final_mem = process.memory_info().rss / (1024 * 1024)
-            """  if total_trials == 1:
-                final_mem = final_mem - init_mem# Memory used during the simulation
-            else:
-                final_mem = final_mem  # Memory used during the simulation """
             total_trials += 1
 
             results[alg.__name__]["scores"].append(game.score)
@@ -117,5 +105,6 @@ def main(algorithms, num_simulations=1):
     return results
 
 if __name__ == "__main__":
-    results = main([snk_s.Snake_AI.bfs, snk_s.Snake_AI.a_star, snk_s.Snake_AI.ucs,snk_s.Snake_AI.iter_deepening], num_simulations=3)
+    #main([snk_s.Snake_AI.iter_deepening], num_simulations=1)
+    results = main([snk_s.Snake_AI.bfs, snk_s.Snake_AI.a_star, snk_s.Snake_AI.ucs,snk_s.Snake_AI.iter_deepening], num_simulations=1)
     plt.plot_results(results)

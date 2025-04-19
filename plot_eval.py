@@ -32,6 +32,7 @@ def plot_results(results):
         # Rotate algorithm names if they're long
         plt.sca(ax)
         plt.xticks(rotation=45, ha='right')
+
     
     plt.tight_layout()
     plt.savefig('algorithm_comparison.png')  # Save to file
