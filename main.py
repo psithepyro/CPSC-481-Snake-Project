@@ -106,5 +106,5 @@ def main(algorithms, num_simulations=1):
 
 if __name__ == "__main__":
     #main([snk_s.Snake_AI.iter_deepening], num_simulations=1)
-    results = main([snk_s.Snake_AI.bfs, snk_s.Snake_AI.a_star, snk_s.Snake_AI.ucs,snk_s.Snake_AI.iter_deepening], num_simulations=1)
+    results = main([snk_s.Snake_AI.bfs, snk_s.Snake_AI.a_star, snk_s.Snake_AI.ucs,snk_s.Snake_AI.iter_deepening], num_simulations=3)
     plt.plot_results(results)
